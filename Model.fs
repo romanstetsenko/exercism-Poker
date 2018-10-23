@@ -34,8 +34,6 @@ type HandRank =
     | ThreeOfKind of Rank * Rank list
     | Straight of Rank
     | Flush of Rank
-    | FullHouse of Rank
+    | FullHouse of Rank * Rank
     | FourOfKind of Rank * Rank list
     | StraightFlush of Rank
-
-type PokerHand = PokerHand of HandRank * string

@@ -133,19 +133,19 @@ let ``Full house beats a flush`` () =
     let expected = ["4S 5H 4C 5D 4H"]
     bestHands hands |> should equal expected
 
-[<Fact(Skip = "Remove to run test")>]
+[<Fact>]
 let ``Both hands have a full house, tie goes to highest-ranked triplet`` () =
     let hands = ["4H 4S 4D 9S 9D"; "5H 5S 5D 8S 8D"]
     let expected = ["5H 5S 5D 8S 8D"]
     bestHands hands |> should equal expected
 
-[<Fact(Skip = "Remove to run test")>]
+[<Fact>]
 let ``With multiple decks, both hands have a full house with the same triplet, tie goes to the pair`` () =
     let hands = ["5H 5S 5D 9S 9D"; "5H 5S 5D 8S 8D"]
     let expected = ["5H 5S 5D 9S 9D"]
     bestHands hands |> should equal expected
 
-[<Fact(Skip = "Remove to run test")>]
+[<Fact>]
 let ``Four of a kind beats a full house`` () =
     let hands = ["4S 5H 4D 5D 4H"; "3S 3H 2S 3D 3C"]
     let expected = ["3S 3H 2S 3D 3C"]
