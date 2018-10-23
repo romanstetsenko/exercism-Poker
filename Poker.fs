@@ -5,6 +5,7 @@ open CardConverter
 
 //todo: to deal with Option.bind
 //todo: to deal remaining ranks
+//todo: refactor findStraight
 //todo: to deal with a low ace
 let rnk = fst
 let distance a b = compare a b
@@ -53,16 +54,31 @@ let (|FullHouse|_|)(Hand hand) =
            |> Option.map(fun (p2,rs) -> HandRank.FullHouse(p1,p2)))
 
 let findStraight cards =
-    let ranks =
-        cards
-        |> List.map rnk
-        |> List.sortDescending
-    ranks
-    |> List.pairwise
-    |> List.forall(fun (one,another) -> distance one another = 1)
-    |> function 
-    | true -> (ranks |> List.max,[]) |> Some
-    | false -> None
+    let inner cards =
+        let ranks =
+            cards
+            |> List.map rnk
+            |> List.sortDescending
+        ranks
+        |> List.pairwise
+        |> List.forall(fun (one,another) -> distance one another = 1)
+        |> function 
+        | true -> (ranks |> List.max,[]) |> Some
+        | false -> None
+    match inner cards with
+    | Some(r,rs) -> Some(r,rs)
+    | None -> 
+        if cards
+           |> List.map rnk
+           |> List.contains Rank.HighAce
+        then 
+            let cards' =
+                cards
+                |> List.map(fun (r,s) -> 
+                       if r = Rank.HighAce then (Rank.LowAce,s)
+                       else (r,s))
+            inner cards'
+        else None
 
 let (|Straight|_|)(Hand hand) =
     findStraight hand |> Option.map(fun (p,rs) -> HandRank.Straight(p))

@@ -97,7 +97,7 @@ let ``Aces can end a straight (10 J Q K A)`` () =
     let expected = ["10D JH QS KD AC"]
     bestHands hands |> should equal expected
 
-[<Fact(Skip = "Remove to run test")>]
+[<Fact>]
 let ``Aces can start a straight (A 2 3 4 5)`` () =
     let hands = ["4S 5H 4C 8D 4H"; "4D AH 3S 2D 5C"]
     let expected = ["4D AH 3S 2D 5C"]
@@ -109,7 +109,7 @@ let ``Both hands with a straight, tie goes to highest ranked card`` () =
     let expected = ["5S 7H 8S 9D 6H"]
     bestHands hands |> should equal expected
 
-[<Fact(Skip = "Remove to run test")>]
+[<Fact>]
 let ``Even though an ace is usually high, a 5-high straight is the lowest-scoring straight`` () =
     let hands = ["2H 3C 4D 5D 6H"; "4S AH 3S 2D 5H"]
     let expected = ["2H 3C 4D 5D 6H"]
