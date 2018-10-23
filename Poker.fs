@@ -3,7 +3,11 @@
 open Model
 open CardConverter
 
+//todo: to deal with Option.bind
+//todo: to deal remaining ranks
+//todo: to deal with a low ace
 let rnk = fst
+let distance a b = compare a b
 
 let remainingRanks =
     let inner = List.map rnk >> List.sortDescending
@@ -48,13 +52,51 @@ let (|FullHouse|_|)(Hand hand) =
            findOfKindRanks 2 remainings 
            |> Option.map(fun (p2,rs) -> HandRank.FullHouse(p1,p2)))
 
+let findStraight cards =
+    let ranks =
+        cards
+        |> List.map rnk
+        |> List.sortDescending
+    ranks
+    |> List.pairwise
+    |> List.forall(fun (one,another) -> distance one another = 1)
+    |> function 
+    | true -> (ranks |> List.max,[]) |> Some
+    | false -> None
+
+let (|Straight|_|)(Hand hand) =
+    findStraight hand |> Option.map(fun (p,rs) -> HandRank.Straight(p))
+
+let findFlush cards =
+    cards
+    |> List.map snd
+    |> List.distinct
+    |> List.length
+    |> (=) 1
+    |> function 
+    | true -> 
+        cards
+        |> List.map rnk
+        |> List.sortDescending
+        |> fun rs -> Some(rs,[])
+    | false -> None
+
+let (|Flush|_|)(Hand hand) =
+    findFlush hand |> Option.map(fun (p,rs) -> HandRank.Flush(p))
+let (|StraightFlush|_|)(Hand hand) =
+    findFlush hand 
+    |> Option.bind
+           (fun (rs,rrs) -> 
+           findStraight hand 
+           |> Option.map(fun (r,rs) -> HandRank.StraightFlush(r)))
+
 let toHandRank hand =
     match hand with
-    //     | StraightFlush r
+    | StraightFlush hr -> hr
     | FourOfKind hr -> hr
     | FullHouse hr -> hr
-    //     | Flush r
-    //| Straight r
+    | Flush hr -> hr
+    | Straight hr -> hr
     | TreeOfKind hr -> hr
     | TwoPair h -> h
     | Pair hr -> hr
@@ -71,9 +113,8 @@ let bestHands hands =
         |> List.maxBy rnk
         |> rnk
     handRanks
-    |> List.filter(fun (hr,s) -> hr = max)
+    |> List.filter(fun (handRank,s) -> handRank = max)
     |> List.map(fun (hr,s) -> s)
-
 //|> List.maxBy(fun (ph,s) -> ph)
 //|> List.map (fun (ph,s) -> s)
-bestHands ["2S 8H 6S 8D JH";"4S 5H 4C 8C 5C"]
+//bestHands ["2S 8H 6S 8D JH";"4S 5H 4C 8C 5C"]

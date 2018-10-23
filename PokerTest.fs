@@ -19,7 +19,7 @@ let ``Highest card out of all hands wins`` () =
     let expected = ["3S 4S 5D 6H JH"]
     bestHands hands |> should equal expected
 
-[<Fact(Skip = "Remove to run test")>]
+[<Fact>]
 let ``A tie has multiple winners`` () =
     let hands = ["4D 5S 6S 8D 3C"; "2S 4C 7S 9H 10H"; "3S 4S 5D 6H JH"; "3H 4H 5C 6C JD"]
     let expected = ["3S 4S 5D 6H JH"; "3H 4H 5C 6C JD"]
@@ -85,13 +85,13 @@ let ``With multiple decks, two players can have same three of a kind, ties go to
     let expected = ["4S AH AS 8C AD"]
     bestHands hands |> should equal expected
 
-[<Fact(Skip = "Remove to run test")>]
+[<Fact>]
 let ``A straight beats three of a kind`` () =
     let hands = ["4S 5H 4C 8D 4H"; "3S 4D 2S 6D 5C"]
     let expected = ["3S 4D 2S 6D 5C"]
     bestHands hands |> should equal expected
 
-[<Fact(Skip = "Remove to run test")>]
+[<Fact>]
 let ``Aces can end a straight (10 J Q K A)`` () =
     let hands = ["4S 5H 4C 8D 4H"; "10D JH QS KD AC"]
     let expected = ["10D JH QS KD AC"]
@@ -103,7 +103,7 @@ let ``Aces can start a straight (A 2 3 4 5)`` () =
     let expected = ["4D AH 3S 2D 5C"]
     bestHands hands |> should equal expected
 
-[<Fact(Skip = "Remove to run test")>]
+[<Fact>]
 let ``Both hands with a straight, tie goes to highest ranked card`` () =
     let hands = ["4S 6C 7S 8D 5H"; "5S 7H 8S 9D 6H"]
     let expected = ["5S 7H 8S 9D 6H"]
@@ -115,19 +115,19 @@ let ``Even though an ace is usually high, a 5-high straight is the lowest-scorin
     let expected = ["2H 3C 4D 5D 6H"]
     bestHands hands |> should equal expected
 
-[<Fact(Skip = "Remove to run test")>]
+[<Fact>]
 let ``Flush beats a straight`` () =
     let hands = ["4C 6H 7D 8D 5H"; "2S 4S 5S 6S 7S"]
     let expected = ["2S 4S 5S 6S 7S"]
     bestHands hands |> should equal expected
 
-[<Fact(Skip = "Remove to run test")>]
+[<Fact>]
 let ``Both hands have a flush, tie goes to high card, down to the last one if necessary`` () =
     let hands = ["4H 7H 8H 9H 6H"; "2S 4S 5S 6S 7S"]
     let expected = ["4H 7H 8H 9H 6H"]
     bestHands hands |> should equal expected
 
-[<Fact(Skip = "Remove to run test")>]
+[<Fact>]
 let ``Full house beats a flush`` () =
     let hands = ["3H 6H 7H 8H 5H"; "4S 5H 4C 5D 4H"]
     let expected = ["4S 5H 4C 5D 4H"]
@@ -163,13 +163,13 @@ let ``With multiple decks, both hands with identical four of a kind, tie determi
     let expected = ["3S 3H 4S 3D 3C"]
     bestHands hands |> should equal expected
 
-[<Fact(Skip = "Remove to run test")>]
+[<Fact>]
 let ``Straight flush beats four of a kind`` () =
     let hands = ["4S 5H 5S 5D 5C"; "7S 8S 9S 6S 10S"]
     let expected = ["7S 8S 9S 6S 10S"]
     bestHands hands |> should equal expected
 
-[<Fact(Skip = "Remove to run test")>]
+[<Fact>]
 let ``Both hands have straight flush, tie goes to highest-ranked card`` () =
     let hands = ["4H 6H 7H 8H 5H"; "5S 7S 8S 9S 6S"]
     let expected = ["5S 7S 8S 9S 6S"]
