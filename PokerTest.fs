@@ -67,19 +67,19 @@ let ``Both hands have two identically ranked pairs, tie goes to remaining card (
     let expected = ["JD QH JS 8D QC"]
     bestHands hands |> should equal expected
 
-[<Fact(Skip = "Remove to run test")>]
+[<Fact>]
 let ``Three of a kind beats two pair`` () =
     let hands = ["2S 8H 2H 8D JH"; "4S 5H 4C 8S 4H"]
     let expected = ["4S 5H 4C 8S 4H"]
     bestHands hands |> should equal expected
 
-[<Fact(Skip = "Remove to run test")>]
+[<Fact>]
 let ``Both hands have three of a kind, tie goes to highest ranked triplet`` () =
     let hands = ["2S 2H 2C 8D JH"; "4S AH AS 8C AD"]
     let expected = ["4S AH AS 8C AD"]
     bestHands hands |> should equal expected
 
-[<Fact(Skip = "Remove to run test")>]
+[<Fact>]
 let ``With multiple decks, two players can have same three of a kind, ties go to highest remaining cards`` () =
     let hands = ["4S AH AS 7C AD"; "4S AH AS 8C AD"]
     let expected = ["4S AH AS 8C AD"]
@@ -151,13 +151,13 @@ let ``Four of a kind beats a full house`` () =
     let expected = ["3S 3H 2S 3D 3C"]
     bestHands hands |> should equal expected
 
-[<Fact(Skip = "Remove to run test")>]
+[<Fact>]
 let ``Both hands have four of a kind, tie goes to high quad`` () =
     let hands = ["2S 2H 2C 8D 2D"; "4S 5H 5S 5D 5C"]
     let expected = ["4S 5H 5S 5D 5C"]
     bestHands hands |> should equal expected
 
-[<Fact(Skip = "Remove to run test")>]
+[<Fact>]
 let ``With multiple decks, both hands with identical four of a kind, tie determined by kicker`` () =
     let hands = ["3S 3H 2S 3D 3C"; "3S 3H 4S 3D 3C"]
     let expected = ["3S 3H 4S 3D 3C"]

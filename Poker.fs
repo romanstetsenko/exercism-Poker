@@ -13,39 +13,29 @@ open CardConverter
 //     |> HandRank.HighCard
 //     |> Some
 let remainingRanks =
-    let inner cards =
-        cards
-        |> List.map fst
-        |> function 
-        | [] -> None
-        | rs -> Some rs
+    let inner = List.map fst >> List.sortDescending
     inner
 
 let (|HighCard|_|)(Hand cards) =
-    remainingRanks cards |> Option.map HandRank.HighCard
+    remainingRanks cards
+    |> HandRank.HighCard
+    |> Some
 
 let findOfKindRanks n =
-    let inner cards = 
+    let inner(cards: Card list) =
         cards
-        |> List.groupBy(fun (r,cs) -> r)
-        |> List.sortByDescending(fun (r,cs) -> r)
+        |> List.groupBy fst
+        |> List.sortByDescending fst
         |> List.tryFind(fun (r,cs) -> List.length cs = n)
         |> Option.map(fun (r,cs) -> 
                let remaining =
                    cards
                    |> List.except cs
-                   |> List.sortByDescending(fun (r,_cs) -> r)
-               cs,remaining)
+                   |> remainingRanks
+               r,remaining)
     inner
-let (|Pair|_|)(Hand hand) =
-    findOfKindRanks |> |> Option.map HandRank.Pair
-// let (|Pair|_|)(Hand hand) =
-//     hand
-//     |> findOfKindRanks 2
-//     |> fun cs -> 
-//         match cs with
-//         | Some(p,cs) -> HandRank.Pair(OfKind p,cs) |> Some
-//         | _ -> None
+
+let (|Pair|_|)(Hand hand) = findOfKindRanks 2 hand |> Option.map HandRank.Pair
 // let (|TwoPair|_|)(Hand hand) =
 //     let rec loop cards acc =
 //         cards
@@ -67,21 +57,19 @@ let (|Pair|_|)(Hand hand) =
 //             |> List.max
 //             |> Some
 //         | _ -> None
-// let (|TreeOfKind|_|)(Hand hand) =
-//     hand
-//     |> findOfKindRanks 3
-//     |> fun rs -> 
-//         match rs with
-//         | [r] -> r |> Some
-//         | _ -> None
+let (|TreeOfKind|_|)(Hand hand) =
+    findOfKindRanks 3 hand |> Option.map HandRank.ThreeOfKind
+let (|FourOfKind|_|)(Hand hand) =
+    findOfKindRanks 4 hand |> Option.map HandRank.FourOfKind
+
 let toHandRank hand =
     match hand with
     //     | StraightFlush r
-    //     | FourOfKind r
+    | FourOfKind hr -> hr 
     //     | FullHouse r
     //     | Flush r
     //| Straight r
-    //| TreeOfKind r -> r
+    | TreeOfKind hr -> hr
     //| TwoPair h -> h
     | Pair hr -> hr
     | HighCard hr -> hr

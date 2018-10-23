@@ -26,17 +26,16 @@ type Card = Rank * Suit
 
 type Hand = Hand of Card list
 
-type RemainingRanks = Rank list
 
 type HandRank =
-    | HighCard of RemainingRanks
-    | Pair of Rank * RemainingRanks
-    | TwoPair of Rank * Rank * RemainingRanks
-    | ThreeOfKind of Rank * RemainingRanks
+    | HighCard of Rank list
+    | Pair of Rank * Rank list
+    | TwoPair of Rank * Rank * Rank list
+    | ThreeOfKind of Rank * Rank list
     | Straight of Rank
     | Flush of Rank
     | FullHouse of Rank
-    | FourOfKind of Rank * RemainingRanks
+    | FourOfKind of Rank * Rank list
     | StraightFlush of Rank
 
 type PokerHand = PokerHand of HandRank * string
