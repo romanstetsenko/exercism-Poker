@@ -23,7 +23,9 @@ type Suit =
     | Diamands
     | Hearts
 
-type Card = Rank * Suit
+type Card = Card of Rank * Suit with
+    static member Rank (Card (r,s)) = r
+    static member Suit (Card (r,s)) = s
 
 type Hand = Hand of Card list
 

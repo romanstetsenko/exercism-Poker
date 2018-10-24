@@ -11,7 +11,7 @@ let rnk = fst
 let distance a b = compare a b
 
 let remainingRanks =
-    let inner = List.map rnk >> List.sortDescending
+    let inner = List.map Card.Rank >> List.sortDescending
     inner
 
 let (|HighCard|_|)(Hand cards) =
@@ -22,7 +22,7 @@ let (|HighCard|_|)(Hand cards) =
 let findOfKindRanks n =
     let inner(cards: Card list) =
         cards
-        |> List.groupBy rnk
+        |> List.groupBy Card.Rank
         |> List.sortByDescending rnk
         |> List.tryFind(fun (r,cs) -> List.length cs = n)
         |> Option.map(fun (r,cs) -> 
@@ -57,7 +57,7 @@ let findStraight cards =
     let inner cards =
         let ranks =
             cards
-            |> List.map rnk
+            |> List.map Card.Rank
             |> List.sortDescending
         ranks
         |> List.pairwise
@@ -69,14 +69,14 @@ let findStraight cards =
     | Some(r,rs) -> Some(r,rs)
     | None -> 
         if cards
-           |> List.map rnk
+           |> List.map Card.Rank
            |> List.contains Rank.HighAce
         then 
             let cards' =
                 cards
-                |> List.map(fun (r,s) -> 
-                       if r = Rank.HighAce then (Rank.LowAce,s)
-                       else (r,s))
+                |> List.map(fun (Card (r,s) as c) -> 
+                       if r = Rank.HighAce then Card (Rank.LowAce,s)
+                       else c)
             inner cards'
         else None
 
@@ -85,14 +85,14 @@ let (|Straight|_|)(Hand hand) =
 
 let findFlush cards =
     cards
-    |> List.map snd
+    |> List.map Card.Suit
     |> List.distinct
     |> List.length
     |> (=) 1
     |> function 
     | true -> 
         cards
-        |> List.map rnk
+        |> List.map Card.Rank
         |> List.sortDescending
         |> fun rs -> Some(rs,[])
     | false -> None
