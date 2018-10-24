@@ -32,7 +32,7 @@ type Hand = Hand of Card list
 type HandRank =
     | HighCard of Rank list
     | Pair of Rank * Rank list
-    | TwoPair of Rank * Rank * Rank list
+    | TwoPair of (Rank * Rank) * Rank list
     | ThreeOfKind of Rank * Rank list
     | Straight of Rank
     | Flush of Rank list 

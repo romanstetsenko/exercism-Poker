@@ -3,21 +3,69 @@
 open Model
 open CardConverter
 
-//todo: to deal with Option.bind
-//todo: to deal remaining ranks
-//todo: refactor findStraight
+type Ranker<'R> = Ranker of (Card list -> Option<'R * Card list>)
 
-let remainingRanks =
-    let inner = List.map Card.Rank >> List.sortDescending
-    inner
+let runR (Ranker f) state = f state
 
-let (|HighCard|_|)(Hand cards) =
-    remainingRanks cards
-    |> HandRank.HighCard
-    |> Some
+let returnR x =
+    let inner state = (x,state) |> Some
+    Ranker inner
 
-let findOfKindRanks n =
-    let inner(cards: Card list) =
+let bindR f xR =
+    let inner state =
+        runR xR state |> Option.bind(fun (x,newState) -> runR (f x) newState)
+    Ranker inner
+
+let (>>=) xR f = bindR f xR
+
+// type RankerBuilder() =
+//     member this.Return(x) = returnR x
+//     member this.ReturnFrom(xR) = xR
+//     member this.Bind(xR,f) = bindR f xR
+// let getR =
+//     let inner cards = Some(cards,cards)
+//     Ranker inner
+// let putR newCards =
+//     let inner _ = Some((),newCards)
+//     Ranker inner
+// let ranker = new RankerBuilder()
+let mapR f r =
+    let inner cards = runR r cards |> Option.map(fun (rs,cs) -> f rs,cs)
+    Ranker inner
+
+let (|>>) r f = mapR f r
+let (.>>.) rR1 rR2 = rR1 >>= (fun r1 -> rR2 >>= (fun r2 -> returnR(r1,r2)))
+
+let (>>.) a b =
+    let inner cards =
+        match runR a cards with
+        | Some _ -> runR b cards
+        | _ -> None
+    Ranker inner
+
+let (<|>) rR1 rR2 =
+    let inner cards =
+        let res1 = runR rR1 cards
+        match res1 with
+        | Some _ -> res1
+        | _ -> runR rR2 cards
+    Ranker inner
+
+let chooseR list = list |> List.reduce (<|>)
+let cardsToRanks = List.map Card.Rank >> List.sortDescending
+
+let remainingRanksR =
+    let ranker cards =
+        cards
+        |> cardsToRanks
+        |> fun cs -> Some(cs,[])
+    Ranker ranker
+
+let remainingRanks = cardsToRanks
+let highCardR = remainingRanksR |> mapR HandRank.HighCard
+
+let ofKindRanksR n =
+    let inner cards =
         cards
         |> List.groupBy Card.Rank
         |> List.sortByDescending fst
@@ -25,107 +73,80 @@ let findOfKindRanks n =
         |> Option.map(fun (r,cs) -> 
                let remaining = cards |> List.except cs
                r,remaining)
-    inner
+    Ranker inner
 
-let (|Pair|_|)(Hand hand) =
-    findOfKindRanks 2 hand 
-    |> Option.map(fun (p,rs) -> HandRank.Pair(p,rs |> remainingRanks))
-let (|TwoPair|_|)(Hand hand) =
-    findOfKindRanks 2 hand 
-    |> Option.bind
-           (fun (p1,remainings) -> 
-           findOfKindRanks 2 remainings 
-           |> Option.map
-                  (fun (p2,rs) -> HandRank.TwoPair(p1,p2,rs |> remainingRanks)))
-let (|TreeOfKind|_|)(Hand hand) =
-    findOfKindRanks 3 hand 
-    |> Option.map(fun (p,rs) -> HandRank.ThreeOfKind(p,rs |> remainingRanks))
-let (|FourOfKind|_|)(Hand hand) =
-    findOfKindRanks 4 hand 
-    |> Option.map(fun (p,rs) -> HandRank.FourOfKind(p,rs |> remainingRanks))
-let (|FullHouse|_|)(Hand hand) =
-    findOfKindRanks 3 hand 
-    |> Option.bind
-           (fun (p1,remainings) -> 
-           findOfKindRanks 2 remainings 
-           |> Option.map(fun (p2,rs) -> HandRank.FullHouse(p1,p2)))
+let pairR = ofKindRanksR 2 .>>. remainingRanksR |>> HandRank.Pair
+let twoPairR =
+    ofKindRanksR 2 .>>. ofKindRanksR 2 .>>. remainingRanksR |>> HandRank.TwoPair
+let treeOfKindR = ofKindRanksR 3 .>>. remainingRanksR |>> HandRank.ThreeOfKind
+let fourOfKindR = ofKindRanksR 4 .>>. remainingRanksR |>> HandRank.FourOfKind
+let fullHouseR = ofKindRanksR 3 .>>. ofKindRanksR 2 |>> HandRank.FullHouse
 
-let findStraight cards =
+let straightRankR' transform =
     let distance a b = compare a b
+    
     let inner cards =
         let ranks =
             cards
-            |> List.map Card.Rank
-            |> List.sortDescending
+            |> transform
+            |> cardsToRanks
         ranks
         |> List.pairwise
         |> List.forall(fun (one,another) -> distance one another = 1)
         |> function 
         | true -> (ranks |> List.max,[]) |> Some
         | false -> None
-    match inner cards with
-    | Some(r,rs) -> Some(r,rs)
-    | None -> 
-        if cards
-           |> List.map Card.Rank
-           |> List.contains Rank.HighAce
-        then 
-            let cards' =
-                cards
-                |> List.map(fun c -> 
-                       if c.rank = Rank.HighAce then {c with rank = Rank.LowAce}
-                       else c)
-            inner cards'
-        else None
+    Ranker inner
 
-let (|Straight|_|)(Hand hand) =
-    findStraight hand |> Option.map(fun (p,rs) -> HandRank.Straight(p))
+let straightLowR =
+    let transform =
+        List.map(fun c -> 
+            if c.rank = Rank.HighAce then {c with rank = Rank.LowAce}
+            else c)
+    straightRankR' transform
 
-let findFlush cards =
-    cards
-    |> List.map Card.Suit
-    |> List.distinct
-    |> List.length
-    |> (=) 1
-    |> function 
-    | true -> 
+let straightHighR = straightRankR' id
+let straightRankR = straightHighR <|> straightLowR
+let straightR = straightRankR |>> HandRank.Straight
+
+let flushRanksR =
+    let inner cards =
         cards
-        |> List.map Card.Rank
-        |> List.sortDescending
-        |> fun rs -> Some(rs,[])
-    | false -> None
+        |> List.map Card.Suit
+        |> List.distinct
+        |> List.length
+        |> (=) 1
+        |> function 
+        | true -> 
+            cards
+            |> cardsToRanks
+            |> fun rs -> Some(rs,[])
+        | false -> None
+    Ranker inner
 
-let (|Flush|_|)(Hand hand) =
-    findFlush hand |> Option.map(fun (p,rs) -> HandRank.Flush(p))
-let (|StraightFlush|_|)(Hand hand) =
-    findFlush hand 
-    |> Option.bind
-           (fun (rs,rrs) -> 
-           findStraight hand 
-           |> Option.map(fun (r,rs) -> HandRank.StraightFlush(r)))
-
-let toHandRank hand =
-    match hand with
-    | StraightFlush hr
-    | FourOfKind hr
-    | FullHouse hr
-    | Flush hr
-    | Straight hr
-    | TreeOfKind hr
-    | TwoPair hr
-    | Pair hr
-    | HighCard hr -> hr
-    | _ -> failwith "Oh, no."
+let flushR = flushRanksR |>> HandRank.Flush
+let straightFlushR = flushRanksR >>. straightRankR |>> HandRank.StraightFlush
+let highestHandR =
+    chooseR 
+        [straightFlushR;fourOfKindR;fullHouseR;flushR;straightR;treeOfKindR;
+         twoPairR;pairR;highCardR]
 
 let bestHands hands =
     let parseHand s = (Hand.parseHand s),s
-    let toPokerHand(h,s) = (toHandRank h),s
-    let handRanks = hands |> List.map(parseHand >> toPokerHand)
+    
+    let handRanks =
+        hands
+        |> List.map(parseHand
+                    >> (fun ((Hand cards),s) -> 
+                    match runR highestHandR cards with
+                    | Some r -> fst r,s
+                    | None -> failwith "fail -_-"))
     
     let max =
         handRanks
         |> List.map fst
         |> List.max
+    
     handRanks
     |> List.filter(fun (handRank,s) -> handRank = max)
     |> List.map(fun (hr,s) -> s)
