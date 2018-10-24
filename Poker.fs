@@ -6,8 +6,6 @@ open CardConverter
 //todo: to deal with Option.bind
 //todo: to deal remaining ranks
 //todo: refactor findStraight
-//todo: to deal with a low ace
-let rnk = fst
 let distance a b = compare a b
 
 let remainingRanks =
@@ -23,7 +21,7 @@ let findOfKindRanks n =
     let inner(cards: Card list) =
         cards
         |> List.groupBy Card.Rank
-        |> List.sortByDescending rnk
+        |> List.sortByDescending fst
         |> List.tryFind(fun (r,cs) -> List.length cs = n)
         |> Option.map(fun (r,cs) -> 
                let remaining = cards |> List.except cs
@@ -74,8 +72,8 @@ let findStraight cards =
         then 
             let cards' =
                 cards
-                |> List.map(fun (Card (r,s) as c) -> 
-                       if r = Rank.HighAce then Card (Rank.LowAce,s)
+                |> List.map(fun c -> 
+                       if c.rank = Rank.HighAce then {c with rank = Rank.LowAce}
                        else c)
             inner cards'
         else None
@@ -126,11 +124,8 @@ let bestHands hands =
     
     let max =
         handRanks
-        |> List.maxBy rnk
-        |> rnk
+        |> List.map fst
+        |> List.max
     handRanks
     |> List.filter(fun (handRank,s) -> handRank = max)
     |> List.map(fun (hr,s) -> s)
-//|> List.maxBy(fun (ph,s) -> ph)
-//|> List.map (fun (ph,s) -> s)
-//bestHands ["2S 8H 6S 8D JH";"4S 5H 4C 8C 5C"]

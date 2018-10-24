@@ -32,9 +32,10 @@ module Suit =
 module Card =
     let fromString(s: string) =
         let l = String.length s
-        (s.[0..l - 2],s.[l - 1..l - 1]) 
+        (s.[0..l - 2],s.[l - 1..l - 1])
         |> fun (rank,suit) -> 
-            (CardRank.fromString rank,Suit.fromString suit) |> Card
+            {rank = CardRank.fromString rank
+             suit = Suit.fromString suit}
 
 module Hand =
     let parseHand(s: string) =

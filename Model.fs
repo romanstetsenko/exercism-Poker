@@ -23,9 +23,9 @@ type Suit =
     | Diamands
     | Hearts
 
-type Card = Card of Rank * Suit with
-    static member Rank (Card (r,s)) = r
-    static member Suit (Card (r,s)) = s
+type Card = { rank: Rank; suit: Suit} with
+    static member Rank {rank=rank} = rank
+    static member Suit {suit=suit} = suit
 
 type Hand = Hand of Card list
 
