@@ -6,7 +6,6 @@ open CardConverter
 //todo: to deal with Option.bind
 //todo: to deal remaining ranks
 //todo: refactor findStraight
-let distance a b = compare a b
 
 let remainingRanks =
     let inner = List.map Card.Rank >> List.sortDescending
@@ -52,6 +51,7 @@ let (|FullHouse|_|)(Hand hand) =
            |> Option.map(fun (p2,rs) -> HandRank.FullHouse(p1,p2)))
 
 let findStraight cards =
+    let distance a b = compare a b
     let inner cards =
         let ranks =
             cards
@@ -106,14 +106,14 @@ let (|StraightFlush|_|)(Hand hand) =
 
 let toHandRank hand =
     match hand with
-    | StraightFlush hr -> hr
-    | FourOfKind hr -> hr
-    | FullHouse hr -> hr
-    | Flush hr -> hr
-    | Straight hr -> hr
-    | TreeOfKind hr -> hr
-    | TwoPair h -> h
-    | Pair hr -> hr
+    | StraightFlush hr
+    | FourOfKind hr
+    | FullHouse hr
+    | Flush hr
+    | Straight hr
+    | TreeOfKind hr
+    | TwoPair hr
+    | Pair hr
     | HighCard hr -> hr
     | _ -> failwith "Oh, no."
 
