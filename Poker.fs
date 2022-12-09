@@ -1,8 +1,8 @@
 ﻿module Poker
 
-open Model
 
 open CardConverter
+open Model
 
 type Ranker<'R> = Ranker of (Card list -> Option<'R * Card list>)
 
